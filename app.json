@@ -96,7 +96,10 @@
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 3000,
-      "url": "https://u.expo.dev/e7947e0b-02c6-4fc4-9e94-71ecbca70a4a"
+      "url": "https://u.expo.dev/e7947e0b-02c6-4fc4-9e94-71ecbca70a4a",
+      "requestHeaders": {
+        "expo-channel-name": "main"
+      }
     },
     "extra": {
       "eas": {
