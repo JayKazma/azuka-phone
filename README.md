@@ -5,7 +5,7 @@ The phone side of Azuka: pair once with the QR code the PC shows, then talk to h
 ## What you need
 
 - Windows PC running Azuka with **Phone link** turned on (Azuka → Settings → Connections). It listens on port 8766.
-- **Tailscale** on the PC and on the iPhone, signed into the same account. That is the private link; it also works on the same Wi-Fi without it.
+- **Tailscale** on the PC and on the iPhone, signed into the same account. That is the private link; it also works on the same Wi-Fi without it, or from anywhere through a Cloudflare Tunnel (below).
 - An iPhone on iOS 16 or newer, a USB cable, and a free Apple ID.
 - No Mac. The app is built by GitHub Actions and signed on the PC with Sideloadly.
 
@@ -24,7 +24,16 @@ What a free account cannot do: push notifications and Live Activities. Those nee
 1. Open the app. It starts on **Pair**.
 2. On the PC: Azuka → Settings → Connections → Phone → *Pair a phone*. A QR code and a 6 digit code appear.
 3. Point the phone at the QR code. It reads `azuka://pair?host=…&port=8766&code=…&name=…`, connects, gets a token, and keeps it in the iPhone keychain. No Mac, no account, nothing leaves your network.
-4. If the camera is awkward, *Type it instead*: the PC's Tailscale IP (or `host:port`) and the code.
+4. If the camera is awkward, *Type it instead*: the PC's Tailscale IP, a `host:port`, or the tunnel hostname (`azuka.example.com`, `https://…` and `wss://…` also work) and the code.
+
+## From anywhere
+
+Without Tailscale, the PC can sit behind a **Cloudflare Tunnel** instead, so the phone reaches it from any network. On the PC, install cloudflared once (`winget install --id Cloudflare.cloudflared`), then in Azuka → Settings → Connections → Phone set **Reach from anywhere**:
+
+- **Quick tunnel**: no account. Azuka starts `cloudflared` and gets a throwaway `https://….trycloudflare.com` address; the card shows it when it is up. The address changes every time the tunnel starts, so pair again when it has (the app keeps the old host until you do). Good for trying it out.
+- **Named tunnel**: a stable address. Needs a free Cloudflare account with a domain on it. In Cloudflare Zero Trust → Networks → Tunnels create a tunnel, add a public hostname (say `azuka.example.com`) pointing at `http://127.0.0.1:8766`, copy the tunnel token, and paste the token and hostname into the Phone card's form. Azuka keeps them in `tunnel.json` next to `backend.py`, never in git.
+
+Pair as usual: the QR now carries the tunnel hostname, port 443 and `tls=1`, and the app connects over `wss://`. Settings shows what carries the link (Tunnel, Tailscale or Wi-Fi). While the tunnel is up the PC pairs through it rather than Tailscale, since it works everywhere; a phone already paired keeps the host it paired with until you pair again.
 
 The pill at the top of Home shows the link: **Linked**, **Reconnecting** (backs off 1 → 30 s), **Offline**. The gear opens Settings with the PC name, host, latency, Azuka's version on the PC, *Reconnect* and *Unpair*.
 

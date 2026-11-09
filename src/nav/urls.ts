@@ -4,7 +4,7 @@ import { parsePairQr } from "../net/protocol";
 import { pairWith, sendText } from "../net/session";
 import { useAzuka } from "../store/useAzuka";
 
-// azuka://ask?text=...   azuka://talk   azuka://home   azuka://pair?host=&port=&code=&name=
+// azuka://ask?text=...   azuka://talk   azuka://home   azuka://pair?host=&port=&code=&name=[&tls=1]
 export function routeUrl(url: string | null | undefined) {
   if (!url || !/^azuka:\/\//i.test(url)) return;
   const rest = url.replace(/^azuka:\/\//i, "");

@@ -2,22 +2,27 @@
 
 export type LinkState = "offline" | "connecting" | "reconnecting" | "linked" | "pairing";
 
-export type Creds = { host: string; port: number; token: string; name: string; id?: string };
+// tls: the PC is behind a Cloudflare Tunnel, so the socket is wss on 443 and TLS is Cloudflare's
+export type Creds = { host: string; port: number; token: string; name: string; id?: string; tls?: boolean };
 
 export const PAIR_SCHEME = "azuka://pair";
 
+export function socketBase(host: string, port: number, tls?: boolean): string {
+  return `${tls ? "wss" : "ws"}://${host}:${port}`;
+}
+
 // name is this phone's name; the PC keeps it next to the token it hands out
-export function pairUrl(host: string, port: number, code: string, name: string): string {
-  return `ws://${host}:${port}/?pair=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
+export function pairUrl(host: string, port: number, code: string, name: string, tls?: boolean): string {
+  return `${socketBase(host, port, tls)}/?pair=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
 }
 
 export function linkUrl(c: Creds): string {
-  return `ws://${c.host}:${c.port}/?t=${encodeURIComponent(c.token)}`;
+  return `${socketBase(c.host, c.port, c.tls)}/?t=${encodeURIComponent(c.token)}`;
 }
 
-export type PairTarget = { host: string; port: number; code: string; name?: string };
+export type PairTarget = { host: string; port: number; code: string; name?: string; tls?: boolean };
 
-// azuka://pair?host=<ip>&port=8766&code=<6 digits>&name=<pc>
+// azuka://pair?host=<ip or hostname>&port=8766&code=<6 digits>&name=<pc>[&tls=1]
 export function parsePairQr(data: string): PairTarget | null {
   const m = /^azuka:\/\/pair\??(.*)$/i.exec(data.trim());
   if (!m) return null;
@@ -28,9 +33,53 @@ export function parsePairQr(data: string): PairTarget | null {
     q[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, " "));
   }
   if (!q.host || !q.code) return null;
-  const port = parseInt(q.port || "8766", 10);
-  return { host: q.host, port: Number.isFinite(port) ? port : 8766, code: q.code, name: q.name };
+  const tls = q.tls === "1" || q.tls === "true";
+  const port = parseInt(q.port || (tls ? "443" : "8766"), 10);
+  return { host: q.host, port: Number.isFinite(port) ? port : tls ? 443 : 8766, code: q.code, name: q.name, tls };
 }
+
+export type HostEntry = { host: string; port: number; tls: boolean };
+
+// what he types by hand: "100.64.0.12", "host:8766", "azuka.example.com:443",
+// "https://azuka.example.com" or "wss://azuka.example.com"
+export function parseHostEntry(text: string, defaultPort: number): HostEntry | null {
+  let s = text.trim();
+  if (!s) return null;
+  let tls = false;
+  const scheme = /^([a-z]+):\/\//i.exec(s);
+  if (scheme) {
+    const sch = scheme[1].toLowerCase();
+    tls = sch === "https" || sch === "wss";
+    s = s.slice(scheme[0].length);
+  }
+  s = s.split("/")[0];
+  const at = s.lastIndexOf(":");
+  let host = s;
+  let port = tls ? 443 : defaultPort;
+  if (at > 0 && /^\d+$/.test(s.slice(at + 1))) {
+    host = s.slice(0, at);
+    port = parseInt(s.slice(at + 1), 10);
+  }
+  host = host.toLowerCase();
+  if (!host || !/^[a-z0-9.-]+$/.test(host)) return null;
+  if (port === 443 && !scheme) tls = true;
+  return { host, port, tls };
+}
+
+export type HostKind = "tunnel" | "tailscale" | "wifi";
+
+// what carries the link: a tunnel (tls), the tailnet (100.64.0.0/10), else the home network
+export function hostKind(c: Pick<Creds, "host" | "tls">): HostKind {
+  if (c.tls) return "tunnel";
+  const m = /^100\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/.exec(c.host);
+  if (m) {
+    const second = parseInt(m[1], 10);
+    if (second >= 64 && second <= 127) return "tailscale";
+  }
+  return "wifi";
+}
+
+export const HOST_KIND_LABEL: Record<HostKind, string> = { tunnel: "Tunnel", tailscale: "Tailscale", wifi: "Wi-Fi" };
 
 export type AzState = "idle" | "listening" | "thinking" | "speaking" | "working" | "offline" | (string & {});
 

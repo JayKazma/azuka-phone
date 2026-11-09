@@ -10,6 +10,7 @@ import { C } from "../theme";
 import { useAzuka } from "../store/useAzuka";
 import { unpair } from "../net/session";
 import { link } from "../net/link";
+import { HOST_KIND_LABEL, hostKind } from "../net/protocol";
 import { clearActivity } from "../store/activity";
 import { go } from "../nav/ref";
 import { APP_VERSION } from "../config";
@@ -49,6 +50,7 @@ export function SettingsScreen() {
       <Glass radius={20} inner={{ paddingHorizontal: 16 }}>
         <Row k="PC" v={creds?.name || "none"} />
         <Row k="Host" v={creds ? `${creds.host}:${creds.port}` : "none"} />
+        <Row k="Reached over" v={creds ? HOST_KIND_LABEL[hostKind(creds)] : "none"} />
         <Row k="Link" v={LINK_LABEL[linkState]} color={LINK_COLOR[linkState]} />
         <Row k="Latency" v={latency !== null ? `${latency} ms` : "—"} />
         <Row k="Private link" v={ts === undefined ? "unknown" : ts ? (typeof ts === "string" ? `tailscale ${ts}` : "tailscale") : "same network"} />

@@ -9,7 +9,7 @@ export async function loadCreds(): Promise<Creds | null> {
     if (!raw) return null;
     const c = JSON.parse(raw) as Creds;
     if (!c.host || !c.token) return null;
-    return c;
+    return { ...c, tls: !!c.tls };
   } catch {
     return null;
   }

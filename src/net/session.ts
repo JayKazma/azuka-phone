@@ -96,8 +96,8 @@ export async function pairWith(t: PairTarget): Promise<Creds> {
   const S = useAzuka.getState();
   S.setLink("pairing");
   try {
-    const got = await link.pair(t.host, t.port, t.code, PHONE_NAME);
-    const creds: Creds = { host: t.host, port: t.port, token: got.token, name: got.name || t.name || t.host, id: got.id };
+    const got = await link.pair(t.host, t.port, t.code, PHONE_NAME, !!t.tls);
+    const creds: Creds = { host: t.host, port: t.port, token: got.token, name: got.name || t.name || t.host, id: got.id, tls: !!t.tls };
     await saveCreds(creds);
     S.setCreds(creds);
     S.resetSession();

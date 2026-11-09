@@ -9,7 +9,7 @@ import { Eyebrow, H1, Body, Mono } from "../components/Text";
 import { Icon } from "../components/Icon";
 import { Primary, Ghost } from "../components/Buttons";
 import { C, F, alpha } from "../theme";
-import { parsePairQr, type PairTarget } from "../net/protocol";
+import { parseHostEntry, parsePairQr, type PairTarget } from "../net/protocol";
 import { pairWith } from "../net/session";
 import { useAzuka } from "../store/useAzuka";
 import { DEFAULT_PORT } from "../config";
@@ -130,8 +130,9 @@ export function PairScreen() {
     const h = host.trim();
     const c = code.trim();
     if (!h || c.length < 4) { setErr("Host and the 6 digit code"); return; }
-    const [hn, pt] = h.split(":");
-    pair({ host: hn, port: pt ? parseInt(pt, 10) || DEFAULT_PORT : DEFAULT_PORT, code: c });
+    const entry = parseHostEntry(h, DEFAULT_PORT);
+    if (!entry) { setErr("That is not an address"); return; }
+    pair({ host: entry.host, port: entry.port, tls: entry.tls, code: c });
   };
 
   const scanState: StepState = busy || link === "pairing" ? "done" : "now";
@@ -173,7 +174,7 @@ export function PairScreen() {
       ) : (
         <Glass radius={20} inner={{ padding: 14, gap: 10 }}>
           <Eyebrow color={C.dim}>PC address</Eyebrow>
-          <TextInput value={host} onChangeText={setHost} placeholder="100.64.0.12 or sen" placeholderTextColor={C.dim} autoCapitalize="none" autoCorrect={false} keyboardType="url" style={s.input} />
+          <TextInput value={host} onChangeText={setHost} placeholder="100.64.0.12 or azuka.example.com" placeholderTextColor={C.dim} autoCapitalize="none" autoCorrect={false} keyboardType="url" style={s.input} />
           <Eyebrow color={C.dim}>Code</Eyebrow>
           <TextInput value={code} onChangeText={setCode} placeholder="6 digits" placeholderTextColor={C.dim} keyboardType="number-pad" maxLength={6} style={[s.input, { fontFamily: F.monoB, letterSpacing: 6 }]} />
           <Primary label={busy ? "Pairing" : "Pair"} icon="link" h={44} onPress={submitManual} disabled={busy} />
