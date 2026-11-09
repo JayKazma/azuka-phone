@@ -2,6 +2,8 @@ import * as Haptics from "expo-haptics";
 import { foregroundApp, type ServerMsg, type StepMsg } from "./protocol";
 import { useAzuka } from "../store/useAzuka";
 import { playMp3Base64, stopAudio } from "../audio/player";
+import { onStreamMsg } from "./stream";
+import { onClipsMsg } from "./clips";
 
 function humanTool(tool?: string) {
   if (!tool) return "Working";
@@ -81,8 +83,11 @@ export function dispatch(msg: ServerMsg) {
       S.addMsg("notice", t);
       S.showToast(t);
       S.addActivity({ kind: "notice", title: "Notice", sub: t, needs: false });
+      if (/phone control is off/i.test(t)) S.patch({ touch: false, keysOn: false });
       break;
     }
+    case "stream": onStreamMsg(msg); break;
+    case "clips": onClipsMsg(msg); break;
     case "reminder": {
       S.addMsg("reminder", msg.text);
       S.addActivity({ kind: "reminder", title: msg.kind === "initiative" ? "She mentioned" : "Reminder", sub: msg.text, needs: false });

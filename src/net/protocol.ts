@@ -126,7 +126,7 @@ export type AddonReply = { type: string; op?: string; rid: string; ok?: boolean;
 export type ServerMsg =
   | Paired | StateMsg | ReadyMsg | SettingsMsg | RemindersMsg | WatchesMsg | HelloMsg | TranscriptMsg | ReplyMsg | DeltaMsg
   | SpeakMsg | StopAudioMsg | StepMsg | PermissionMsg | PermissionDoneMsg | SuggestMsg | InitiativeMsg | NoticeMsg | ReminderMsg
-  | SpotifyEvent | ModesMsg | HealthMsg | GameMsg | PhoneReply | ErrorMsg;
+  | SpotifyEvent | ModesMsg | HealthMsg | GameMsg | PhoneReply | StreamMsg | ClipsMsg | ErrorMsg;
 
 export type Foreground = string | { app?: string | null; title?: string | null } | null;
 export type PhoneStatus = {
@@ -172,4 +172,52 @@ export type RemindersOut = { type: "reminders"; op: "list"; rid?: string };
 export type HealthOut = { type: "health"; op: "now" | "subscribe" | "unsubscribe"; rid?: string };
 
 export type ClientMsg =
-  | TextOut | AudioChunkOut | AudioEndOut | InterruptOut | PermissionReplyOut | InitiativeAnswerOut | PhoneOut | SpotifyOut | ModesOut | RemindersOut | HealthOut;
+  | TextOut | AudioChunkOut | AudioEndOut | InterruptOut | PermissionReplyOut | InitiativeAnswerOut | PhoneOut | SpotifyOut | ModesOut | RemindersOut | HealthOut
+  | StreamOut | InputOut | ClipsOut;
+
+// ---- live view, input, clips ----
+
+export type StreamQuality = "auto" | "720" | "1080";
+export type SdpInit = { type: "offer" | "answer" | "pranswer" | "rollback"; sdp: string };
+export type IceInit = { candidate: string; sdpMid: string | null; sdpMLineIndex: number | null };
+export type StreamMsg =
+  | { type: "stream"; op: "started"; width: number; height: number; fps: number }
+  | { type: "stream"; op: "signal"; sdp?: SdpInit; candidate?: IceInit }
+  | { type: "stream"; op: "stopped" }
+  | { type: "stream"; op: "error"; ok?: boolean; error?: string; text?: string };
+export type StreamOut =
+  | { type: "stream"; op: "start"; quality: StreamQuality }
+  | { type: "stream"; op: "signal"; sdp?: SdpInit; candidate?: IceInit }
+  | { type: "stream"; op: "stop" };
+
+export type MouseButton = "left" | "right" | "middle";
+export type InputOut =
+  | { type: "input"; op: "move"; x: number; y: number }
+  | { type: "input"; op: "down" | "up" | "click" | "dblclick"; button: MouseButton; x: number; y: number }
+  | { type: "input"; op: "scroll"; dx: number; dy: number }
+  | { type: "input"; op: "keys"; combo: string }
+  | { type: "input"; op: "text"; text: string };
+
+export type ClipKind = "clip" | "recording";
+// at: unix time of the clip (seconds); thumb: base64 jpeg
+export type ClipItem = { id: string; kind: ClipKind; name: string; at: number; seconds: number; bytes: number; thumb: string | null };
+export type ClipsMsg =
+  | { type: "clips"; op: "list"; items: ClipItem[] }
+  | { type: "clips"; op: "saved"; item: ClipItem }
+  | { type: "clips"; op: "recording"; on: boolean; since?: number | null }
+  | { type: "clips"; op: "file"; id: string; seq: number; total: number; data: string }
+  | { type: "clips"; op: "file_end"; id: string; bytes: number }
+  | { type: "clips"; op: "error"; id?: string; ok?: boolean; error?: string; text?: string };
+export type ClipsOut =
+  | { type: "clips"; op: "list" }
+  | { type: "clips"; op: "clip" }
+  | { type: "clips"; op: "record"; on: boolean }
+  | { type: "clips"; op: "get"; id: string }
+  | { type: "clips"; op: "delete"; id: string };
+
+// the PC may stamp seconds or milliseconds
+export function epochMs(t: number | null | undefined): number {
+  if (!t) return 0;
+  return t > 1e12 ? t : t * 1000;
+}
+

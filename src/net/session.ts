@@ -8,6 +8,7 @@ import { loadActivity, watchActivity } from "../store/activity";
 import { PING_EVERY_MS, SCREEN_EVERY_MS, SCREEN_WIDTH, STATUS_EVERY_MS } from "../config";
 import { stopAudio } from "../audio/player";
 import { PHONE_NAME, SPOTIFY_EVERY_MS } from "../config";
+import { requestClips } from "./clips";
 
 let booted = false;
 let statusTimer: ReturnType<typeof setInterval> | null = null;
@@ -37,7 +38,10 @@ function stopPolling() {
 
 function startShots() {
   if (shotTimer) return;
-  const grab = () => { link.send({ type: "phone", op: "screenshot", width: SCREEN_WIDTH }); };
+  const grab = () => {
+    if (useAzuka.getState().stream.state === "live") return;
+    link.send({ type: "phone", op: "screenshot", width: SCREEN_WIDTH });
+  };
   grab();
   shotTimer = setInterval(grab, SCREEN_EVERY_MS);
 }
@@ -71,6 +75,7 @@ async function afterLink() {
   await refreshSpotify();
   try { const r = await link.ask("modes", "list"); S.patch({ modes: (r.items as never) || [], activeMode: (r.active as string | null) ?? null }); } catch {}
   try { const r = await link.ask("reminders", "list"); if (Array.isArray(r.items)) S.patch({ reminders: r.items as never }); } catch {}
+  requestClips();
 }
 
 export async function boot() {

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { AzState, Creds, LinkState, Mode, PermissionMsg, PhoneStatus, Reminder, SpotifyPlayer, SuggestMsg } from "../net/protocol";
+import type { AzState, ClipItem, Creds, LinkState, Mode, PermissionMsg, PhoneStatus, Reminder, SpotifyPlayer, SuggestMsg } from "../net/protocol";
 import { ACTIVITY_MAX } from "../config";
 
 export type ChatRole = "you" | "her" | "notice" | "reminder";
@@ -13,6 +13,13 @@ export type ActivityItem = { id: string; kind: ActivityKind; title: string; sub?
 export type Toast = { text: string; tone?: "good" | "bad" | "plain" };
 export type Shot = { uri: string; w: number; h: number; at: number };
 export type Hello = { name: string; version?: string; tailscale?: string | boolean | null };
+export type StreamState = "idle" | "connecting" | "live" | "failed";
+// width/height: the captured display; frameWidth/Height: what actually arrives
+export type Stream = { state: StreamState; width: number; height: number; fps: number; frameWidth: number; frameHeight: number; url: string | null; kbps: number | null; error: string | null };
+export type Recording = { on: boolean; since: number | null };
+export type Download = { progress: number; uri: string | null; error: string | null; done: boolean };
+
+export const idleStream = (): Stream => ({ state: "idle", width: 0, height: 0, fps: 0, frameWidth: 0, frameHeight: 0, url: null, kbps: null, error: null });
 
 let seq = 0;
 export const uid = () => `${Date.now().toString(36)}${(seq++).toString(36)}`;
@@ -43,6 +50,13 @@ type Store = {
   toast: Toast | null;
   micLevel: number;
   talking: boolean;
+  stream: Stream;
+  touch: boolean;
+  keysOn: boolean;
+  clips: ClipItem[];
+  recording: Recording;
+  downloads: Record<string, Download>;
+  clipFlash: number | null;
 
   setLink: (link: LinkState) => void;
   setCreds: (creds: Creds | null) => void;
@@ -91,8 +105,15 @@ export const useAzuka = create<Store>((set, get) => ({
   toast: null,
   micLevel: 0,
   talking: false,
+  stream: idleStream(),
+  touch: false,
+  keysOn: false,
+  clips: [],
+  recording: { on: false, since: null },
+  downloads: {},
+  clipFlash: null,
 
-  setLink: (link) => set({ link, ...(link === "linked" ? {} : { state: "offline", latency: null }) }),
+  setLink: (link) => set({ link, ...(link === "linked" ? {} : { state: "offline", latency: null, touch: false, keysOn: false }) }),
   setCreds: (creds) => set({ creds }),
   patch: (p) => set(p),
 
@@ -137,5 +158,5 @@ export const useAzuka = create<Store>((set, get) => ({
     toastTimer = setTimeout(() => set({ toast: null }), 2600);
   },
   resetSession: () =>
-    set({ hello: null, ready: false, state: "offline", latency: null, status: null, shot: null, shotError: null, messages: [], streamId: null, steps: [], permissions: [], suggestion: null, spotify: null, modes: [], activeMode: null, health: null, game: null, reminders: [], settings: {} }),
+    set({ hello: null, ready: false, state: "offline", latency: null, status: null, shot: null, shotError: null, messages: [], streamId: null, steps: [], permissions: [], suggestion: null, spotify: null, modes: [], activeMode: null, health: null, game: null, reminders: [], settings: {}, stream: idleStream(), touch: false, keysOn: false, clips: [], recording: { on: false, since: null }, downloads: {}, clipFlash: null }),
 }));
