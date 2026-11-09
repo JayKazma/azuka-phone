@@ -5,12 +5,14 @@ import { clearCreds, loadCreds, saveCreds } from "./creds";
 import type { Creds, PairTarget } from "./protocol";
 import { useAzuka } from "../store/useAzuka";
 import { loadActivity, watchActivity } from "../store/activity";
-import { PING_EVERY_MS, SCREEN_FPS, SCREEN_WIDTH, STATUS_EVERY_MS } from "../config";
+import { PING_EVERY_MS, SCREEN_EVERY_MS, SCREEN_WIDTH, STATUS_EVERY_MS } from "../config";
 import { stopAudio } from "../audio/player";
+import { PHONE_NAME, SPOTIFY_EVERY_MS } from "../config";
 
 let booted = false;
 let statusTimer: ReturnType<typeof setInterval> | null = null;
 let pingTimer: ReturnType<typeof setInterval> | null = null;
+let spotifyTimer: ReturnType<typeof setInterval> | null = null;
 let shotTimer: ReturnType<typeof setInterval> | null = null;
 let shotWatchers = 0;
 
@@ -21,13 +23,15 @@ function startPolling() {
   tick(); ping();
   statusTimer = setInterval(tick, STATUS_EVERY_MS);
   pingTimer = setInterval(ping, PING_EVERY_MS);
+  spotifyTimer = setInterval(refreshSpotify, SPOTIFY_EVERY_MS);
   if (shotWatchers > 0) startShots();
 }
 
 function stopPolling() {
   if (statusTimer) clearInterval(statusTimer);
   if (pingTimer) clearInterval(pingTimer);
-  statusTimer = null; pingTimer = null;
+  if (spotifyTimer) clearInterval(spotifyTimer);
+  statusTimer = null; pingTimer = null; spotifyTimer = null;
   stopShots();
 }
 
@@ -35,7 +39,7 @@ function startShots() {
   if (shotTimer) return;
   const grab = () => { link.send({ type: "phone", op: "screenshot", width: SCREEN_WIDTH }); };
   grab();
-  shotTimer = setInterval(grab, Math.round(1000 / SCREEN_FPS));
+  shotTimer = setInterval(grab, SCREEN_EVERY_MS);
 }
 
 function stopShots() {
@@ -53,10 +57,18 @@ export function watchScreen(): () => void {
   };
 }
 
+// the PC only pushes Spotify to the panel's Music view, so the phone asks
+export async function refreshSpotify() {
+  if (!link.isOpen) return;
+  try {
+    const r = await link.ask("spotify", "player");
+    dispatch({ ...(r as object), type: "spotify", event: "player" } as never);
+  } catch {}
+}
+
 async function afterLink() {
   const S = useAzuka.getState();
-  try { await link.ask("spotify", "subscribe"); } catch {}
-  try { const r = await link.ask("spotify", "player"); dispatch({ ...(r as object), type: "spotify", event: "player" } as never); } catch {}
+  await refreshSpotify();
   try { const r = await link.ask("modes", "list"); S.patch({ modes: (r.items as never) || [], activeMode: (r.active as string | null) ?? null }); } catch {}
   try { const r = await link.ask("reminders", "list"); if (Array.isArray(r.items)) S.patch({ reminders: r.items as never }); } catch {}
 }
@@ -84,7 +96,7 @@ export async function pairWith(t: PairTarget): Promise<Creds> {
   const S = useAzuka.getState();
   S.setLink("pairing");
   try {
-    const got = await link.pair(t.host, t.port, t.code);
+    const got = await link.pair(t.host, t.port, t.code, PHONE_NAME);
     const creds: Creds = { host: t.host, port: t.port, token: got.token, name: got.name || t.name || t.host, id: got.id };
     await saveCreds(creds);
     S.setCreds(creds);

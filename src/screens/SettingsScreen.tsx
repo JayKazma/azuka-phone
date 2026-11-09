@@ -32,6 +32,7 @@ export function SettingsScreen() {
   const latency = useAzuka((s) => s.latency);
   const hello = useAzuka((s) => s.hello);
   const status = useAzuka((s) => s.status);
+  const ts = hello?.tailscale ?? status?.tailscale;
 
   const askUnpair = () => {
     Alert.alert("Unpair this PC?", "The phone forgets the token. Pair again from the PC's code.", [
@@ -50,7 +51,7 @@ export function SettingsScreen() {
         <Row k="Host" v={creds ? `${creds.host}:${creds.port}` : "none"} />
         <Row k="Link" v={LINK_LABEL[linkState]} color={LINK_COLOR[linkState]} />
         <Row k="Latency" v={latency !== null ? `${latency} ms` : "—"} />
-        <Row k="Private link" v={hello?.tailscale === undefined ? (status?.tailscale === undefined ? "unknown" : status.tailscale ? "tailscale" : "same network") : hello.tailscale ? "tailscale" : "same network"} />
+        <Row k="Private link" v={ts === undefined ? "unknown" : ts ? (typeof ts === "string" ? `tailscale ${ts}` : "tailscale") : "same network"} />
         <Row k="Azuka on the PC" v={hello?.version ? `v${hello.version}` : "—"} last />
       </Glass>
 

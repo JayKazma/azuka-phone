@@ -1,5 +1,5 @@
 import * as Haptics from "expo-haptics";
-import type { ServerMsg, StepMsg } from "./protocol";
+import { foregroundApp, type ServerMsg, type StepMsg } from "./protocol";
 import { useAzuka } from "../store/useAzuka";
 import { playMp3Base64, stopAudio } from "../audio/player";
 
@@ -107,11 +107,13 @@ export function dispatch(msg: ServerMsg) {
       if (m.op === "status") {
         const { type: _t, op: _o, rid: _r, ...st } = m;
         S.patch({ status: st });
-        const g = st.game as { on: boolean; app?: string } | null | undefined;
-        if (g && typeof g === "object") S.patch({ game: g });
-      } else if (m.op === "screenshot" && typeof m.jpeg === "string") {
-        S.patch({ shot: { uri: `data:image/jpeg;base64,${m.jpeg}`, w: Number(m.w) || 0, h: Number(m.h) || 0, at: Number(m.at) || Date.now() } });
-      } else if (m.op === "pong" && typeof m.t === "number") {
+        const g = st.game;
+        if (g && typeof g === "object") S.patch({ game: g as { on: boolean; app?: string } });
+        else if (typeof g === "boolean") S.patch({ game: { on: g, app: g ? foregroundApp(st.foreground as never) : undefined } });
+      } else if (m.op === "screenshot") {
+        if (typeof m.jpeg === "string") S.patch({ shot: { uri: `data:image/jpeg;base64,${m.jpeg}`, w: Number(m.w) || 0, h: Number(m.h) || 0, at: Date.now() }, shotError: null });
+        else if (m.ok === false) S.patch({ shotError: String(m.error || "No screen right now") });
+      } else if ((m.op === "pong" || m.op === "ping") && typeof m.t === "number") {
         S.patch({ latency: Math.max(0, Math.round(Date.now() - m.t)) });
       }
       break;

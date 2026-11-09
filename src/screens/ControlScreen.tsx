@@ -12,10 +12,11 @@ import { Icon, type IconName } from "../components/Icon";
 import { Ring } from "../components/Ring";
 import { C, F, alpha } from "../theme";
 import { useAzuka } from "../store/useAzuka";
-import { interrupt, sendText, watchScreen } from "../net/session";
+import { interrupt, refreshSpotify, sendText, watchScreen } from "../net/session";
 import { link } from "../net/link";
 import { go } from "../nav/ref";
 import { SCREEN_FPS } from "../config";
+import { foregroundApp } from "../net/protocol";
 
 const PHASE3 = "Coming in phase 3";
 
@@ -70,6 +71,7 @@ export function ControlScreen() {
   const linkState = useAzuka((s) => s.link);
   const creds = useAzuka((s) => s.creds);
   const shot = useAzuka((s) => s.shot);
+  const shotError = useAzuka((s) => s.shotError);
   const latency = useAzuka((s) => s.latency);
   const status = useAzuka((s) => s.status);
   const modes = useAzuka((s) => s.modes);
@@ -89,9 +91,9 @@ export function ControlScreen() {
   const media = () => {
     const playing = !!spotify?.is_playing;
     Alert.alert("Media", spotify?.track ? spotify.track.name : "Spotify on the PC", [
-      { text: playing ? "Pause" : "Play", onPress: () => link.ask("spotify", playing ? "pause" : "resume").catch((e) => toast(e.message, "bad")) },
-      { text: "Next", onPress: () => link.ask("spotify", "next").catch((e) => toast(e.message, "bad")) },
-      { text: "Previous", onPress: () => link.ask("spotify", "previous").catch((e) => toast(e.message, "bad")) },
+      { text: playing ? "Pause" : "Play", onPress: () => link.ask("spotify", playing ? "pause" : "resume").then(() => setTimeout(refreshSpotify, 600)).catch((e) => toast(e.message, "bad")) },
+      { text: "Next", onPress: () => link.ask("spotify", "next").then(() => setTimeout(refreshSpotify, 600)).catch((e) => toast(e.message, "bad")) },
+      { text: "Previous", onPress: () => link.ask("spotify", "previous").then(() => setTimeout(refreshSpotify, 600)).catch((e) => toast(e.message, "bad")) },
       { text: "Cancel", style: "cancel" },
     ]);
   };
@@ -137,14 +139,14 @@ export function ControlScreen() {
           {shot ? <Image source={{ uri: shot.uri }} style={StyleSheet.absoluteFill} resizeMode="contain" /> : (
             <View style={[StyleSheet.absoluteFill, { alignItems: "center", justifyContent: "center", gap: 8 }]}>
               <Icon name="screen" size={30} color={C.dim} stroke={1.5} />
-              <Mono>{up ? "WAITING FOR THE FIRST FRAME" : "PC OUT OF REACH"}</Mono>
+              <Mono style={{ textAlign: "center", paddingHorizontal: 20 }}>{!up ? "PC OUT OF REACH" : shotError ? shotError.toUpperCase() : "WAITING FOR THE FIRST FRAME"}</Mono>
             </View>
           )}
           <View style={{ position: "absolute", left: 10, top: 10 }}>
             <Chip text="LIVE" dot={stale ? C.dim : C.rd} fg={stale ? C.dim : C.rd} />
           </View>
           <View style={{ position: "absolute", right: 10, top: 10 }}>
-            <Chip text={status?.foreground ? status.foreground.slice(0, 22) : "screen v1"} fg={C.am} icon="screen" />
+            <Chip text={foregroundApp(status?.foreground).slice(0, 22) || "screen v1"} fg={C.am} icon="screen" />
           </View>
           <View style={{ position: "absolute", left: 10, bottom: 10 }}>
             <Chip text={`${shot ? `${shot.w}×${shot.h}` : "—"} · ${SCREEN_FPS} fps${latency !== null ? ` · ${latency} ms` : ""}`} />
@@ -187,7 +189,7 @@ export function ControlScreen() {
             <RoundBtn icon="x" onPress={() => setFull(false)} />
           </View>
           <View style={{ position: "absolute", bottom: 40, alignSelf: "center" }}>
-            <Body size={12} color={C.dim}>{status?.foreground || ""}</Body>
+            <Body size={12} color={C.dim}>{foregroundApp(status?.foreground)}</Body>
           </View>
         </Pressable>
       </Modal>

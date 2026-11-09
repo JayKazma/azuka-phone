@@ -12,7 +12,7 @@ export type ActivityKind = "permission" | "suggest" | "reply" | "notice" | "remi
 export type ActivityItem = { id: string; kind: ActivityKind; title: string; sub?: string; at: number; needs: boolean; refId?: string };
 export type Toast = { text: string; tone?: "good" | "bad" | "plain" };
 export type Shot = { uri: string; w: number; h: number; at: number };
-export type Hello = { name: string; version?: string; tailscale?: boolean };
+export type Hello = { name: string; version?: string; tailscale?: string | boolean | null };
 
 let seq = 0;
 export const uid = () => `${Date.now().toString(36)}${(seq++).toString(36)}`;
@@ -26,6 +26,7 @@ type Store = {
   latency: number | null;
   status: PhoneStatus | null;
   shot: Shot | null;
+  shotError: string | null;
   messages: ChatMsg[];
   streamId: string | null;
   steps: Step[];
@@ -73,6 +74,7 @@ export const useAzuka = create<Store>((set, get) => ({
   latency: null,
   status: null,
   shot: null,
+  shotError: null,
   messages: [],
   streamId: null,
   steps: [],
@@ -135,5 +137,5 @@ export const useAzuka = create<Store>((set, get) => ({
     toastTimer = setTimeout(() => set({ toast: null }), 2600);
   },
   resetSession: () =>
-    set({ hello: null, ready: false, state: "offline", latency: null, status: null, shot: null, messages: [], streamId: null, steps: [], permissions: [], suggestion: null, spotify: null, modes: [], activeMode: null, health: null, game: null, reminders: [], settings: {} }),
+    set({ hello: null, ready: false, state: "offline", latency: null, status: null, shot: null, shotError: null, messages: [], streamId: null, steps: [], permissions: [], suggestion: null, spotify: null, modes: [], activeMode: null, health: null, game: null, reminders: [], settings: {} }),
 }));

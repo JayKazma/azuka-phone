@@ -14,6 +14,8 @@ import { C, R, alpha } from "../theme";
 import { useAzuka } from "../store/useAzuka";
 import { link } from "../net/link";
 import { go } from "../nav/ref";
+import { refreshSpotify } from "../net/session";
+import { useIsFocused } from "@react-navigation/native";
 import { mmss } from "../util/time";
 import type { Mode } from "../net/protocol";
 
@@ -40,6 +42,9 @@ export function PlayScreen() {
   const active = useAzuka((s) => s.activeMode);
   const toast = useAzuka((s) => s.showToast);
   const [now, setNow] = useState(Date.now());
+  const focused = useIsFocused();
+
+  useEffect(() => { if (focused) refreshSpotify(); }, [focused]);
 
   useEffect(() => {
     if (!sp?.is_playing) return;
@@ -53,8 +58,8 @@ export function PlayScreen() {
   const pos = sp?.is_playing ? Math.min(dur || Infinity, base + (now - (sp?.at || now))) : base;
   const pct = dur ? Math.max(0, Math.min(100, (pos / dur) * 100)) : 0;
 
-  const op = (o: "pause" | "resume" | "next" | "previous") => link.ask("spotify", o).catch((e) => toast(e.message, "bad"));
-  const shuffle = () => link.ask("spotify", "shuffle", { value: !sp?.shuffle }).catch((e) => toast(e.message, "bad"));
+  const op = (o: "pause" | "resume" | "next" | "previous") => link.ask("spotify", o).then(() => setTimeout(refreshSpotify, 600)).catch((e) => toast(e.message, "bad"));
+  const shuffle = () => toast("Shuffle is not on the phone link yet");
 
   const runMode = (m: Mode) => {
     if (active === m.name) {

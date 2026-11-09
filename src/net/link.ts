@@ -67,10 +67,10 @@ class Link {
   }
 
   // first contact: the code from the QR, back comes a token
-  pair(host: string, port: number, code: string, timeoutMs = 15000): Promise<Paired> {
+  pair(host: string, port: number, code: string, phoneName: string, timeoutMs = 15000): Promise<Paired> {
     return new Promise((resolve, reject) => {
       let done = false;
-      const ws = new WebSocket(pairUrl(host, port, code));
+      const ws = new WebSocket(pairUrl(host, port, code, phoneName));
       const timer = setTimeout(() => { if (!done) { done = true; try { ws.close(); } catch {} reject(new Error("The PC did not answer.")); } }, timeoutMs);
       ws.onmessage = (ev) => {
         let msg: ServerMsg;

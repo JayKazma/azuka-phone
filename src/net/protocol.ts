@@ -6,8 +6,9 @@ export type Creds = { host: string; port: number; token: string; name: string; i
 
 export const PAIR_SCHEME = "azuka://pair";
 
-export function pairUrl(host: string, port: number, code: string): string {
-  return `ws://${host}:${port}/?pair=${encodeURIComponent(code)}`;
+// name is this phone's name; the PC keeps it next to the token it hands out
+export function pairUrl(host: string, port: number, code: string, name: string): string {
+  return `ws://${host}:${port}/?pair=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}`;
 }
 
 export function linkUrl(c: Creds): string {
@@ -41,7 +42,7 @@ export type ReadyMsg = { type: "ready" };
 export type SettingsMsg = { type: "settings"; values: Record<string, unknown> };
 export type RemindersMsg = { type: "reminders"; items: Reminder[] };
 export type WatchesMsg = { type: "watches"; items: unknown[] };
-export type HelloMsg = { type: "phone_hello"; name: string; version?: string; tailscale?: boolean };
+export type HelloMsg = { type: "phone_hello"; name: string; version?: string; tailscale?: string | boolean | null; phone?: string };
 export type TranscriptMsg = { type: "transcript"; text: string };
 export type ReplyMsg = { type: "reply"; text: string; ack?: boolean; did?: unknown; quiet?: boolean };
 export type DeltaMsg = { type: "delta"; text: string };
@@ -68,7 +69,7 @@ export type GameMsg = { type: "game"; on: boolean; app?: string };
 export type PhoneReply =
   | { type: "phone"; op: "status"; rid?: string } & PhoneStatus
   | { type: "phone"; op: "screenshot"; rid?: string; jpeg: string; w: number; h: number; at?: number }
-  | { type: "phone"; op: "pong"; rid?: string; t: number }
+  | { type: "phone"; op: "ping" | "pong"; rid?: string; t: number; pong?: boolean; server_time?: number }
   | { type: "phone"; op: string; rid?: string; ok?: boolean; error?: string };
 export type ErrorMsg = { type: "error"; text?: string; error?: string };
 export type AddonReply = { type: string; op?: string; rid: string; ok?: boolean; error?: string } & Record<string, unknown>;
@@ -78,10 +79,18 @@ export type ServerMsg =
   | SpeakMsg | StopAudioMsg | StepMsg | PermissionMsg | PermissionDoneMsg | SuggestMsg | InitiativeMsg | NoticeMsg | ReminderMsg
   | SpotifyEvent | ModesMsg | HealthMsg | GameMsg | PhoneReply | ErrorMsg;
 
+export type Foreground = string | { app?: string | null; title?: string | null } | null;
 export type PhoneStatus = {
-  pc?: string; foreground?: string; mode?: string | null; game?: { on: boolean; app?: string } | null;
-  cpu?: number; gpu_temp?: number; ram_pct?: number; tailscale?: boolean; server_time?: number;
+  pc?: string; foreground?: Foreground; mode?: string | null; game?: boolean | { on: boolean; app?: string } | null; busy?: boolean;
+  cpu?: number | null; gpu_temp?: number | null; ram_pct?: number | null; tailscale?: string | boolean | null; listening?: string | null;
+  phones?: number; version?: string; server_time?: number;
 };
+
+export function foregroundApp(f: Foreground | undefined): string {
+  if (!f) return "";
+  if (typeof f === "string") return f;
+  return (f.app || f.title || "").replace(/\.exe$/i, "");
+}
 
 export type SpotifyTrack = {
   id?: string; uri?: string; name: string; artists?: string[]; album?: string; art?: string; duration_ms?: number; kind?: string;
@@ -108,7 +117,7 @@ export type PhoneOut =
   | { type: "phone"; op: "status"; rid?: string }
   | { type: "phone"; op: "screenshot"; width: number; rid?: string }
   | { type: "phone"; op: "ping"; t: number; rid?: string };
-export type SpotifyOut = { type: "spotify"; op: "status" | "player" | "play" | "pause" | "resume" | "next" | "previous" | "subscribe" | "unsubscribe" | "shuffle" | "volume"; rid?: string; value?: unknown };
+export type SpotifyOut = { type: "spotify"; op: "status" | "player" | "play" | "pause" | "resume" | "next" | "previous" | "volume"; rid?: string; value?: unknown };
 export type ModesOut = { type: "modes"; op: "list" | "run" | "end"; name?: string; rid?: string };
 export type RemindersOut = { type: "reminders"; op: "list"; rid?: string };
 export type HealthOut = { type: "health"; op: "now" | "subscribe" | "unsubscribe"; rid?: string };

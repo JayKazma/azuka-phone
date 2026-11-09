@@ -19,7 +19,7 @@ import { useAzuka } from "../store/useAzuka";
 import { go } from "../nav/ref";
 import { OWNER } from "../config";
 import { greeting, hhmm } from "../util/time";
-import type { AzState } from "../net/protocol";
+import { foregroundApp, type AzState } from "../net/protocol";
 
 const corner = require("../../assets/azuka-corner.png");
 
@@ -114,7 +114,7 @@ export function HomeScreen() {
 
   const [label, color] = stateLabel(st, link);
   const pcName = creds?.name || "PC";
-  const fg = status?.foreground;
+  const fg = foregroundApp(status?.foreground);
   const mode = status?.mode;
   const line = link !== "linked"
     ? "Her PC is out of reach."
