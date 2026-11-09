@@ -22,7 +22,7 @@ What a free account cannot do: push notifications and Live Activities. Those nee
 ## Pair
 
 1. Open the app. It starts on **Pair**.
-2. On the PC: Azuka → Settings → Connections → Phone link → *Show code*. A QR code and a 6 digit code appear.
+2. On the PC: Azuka → Settings → Connections → Phone → *Pair a phone*. A QR code and a 6 digit code appear.
 3. Point the phone at the QR code. It reads `azuka://pair?host=…&port=8766&code=…&name=…`, connects, gets a token, and keeps it in the iPhone keychain. No Mac, no account, nothing leaves your network.
 4. If the camera is awkward, *Type it instead*: the PC's Tailscale IP (or `host:port`) and the code.
 
