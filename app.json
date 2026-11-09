@@ -16,7 +16,9 @@
         "NSMicrophoneUsageDescription": "Azuka listens while you hold the talk button.",
         "NSFaceIDUsageDescription": "Face ID confirms it is you before Azuka acts on your PC.",
         "NSLocalNetworkUsageDescription": "Azuka talks to the assistant running on your PC over your own network.",
-        "UIBackgroundModes": ["audio"],
+        "UIBackgroundModes": [
+          "audio"
+        ],
         "NSPhotoLibraryAddUsageDescription": "Azuka saves the clips you pick to your Photos.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
@@ -28,19 +30,52 @@
       "package": "com.sento.azuka"
     },
     "plugins": [
-      ["expo-splash-screen", {
-        "image": "./assets/azuka-avatar.png",
-        "imageWidth": 180,
-        "backgroundColor": "#09080d"
-      }],
-      ["expo-camera", { "cameraPermission": "Azuka scans the pairing code shown on your PC." }],
-      ["expo-audio", { "microphonePermission": "Azuka listens while you hold the talk button." }],
-      ["expo-local-authentication", { "faceIDPermission": "Face ID confirms it is you before Azuka acts on your PC." }],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/azuka-avatar.png",
+          "imageWidth": 180,
+          "backgroundColor": "#09080d"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Azuka scans the pairing code shown on your PC."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Azuka listens while you hold the talk button."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Face ID confirms it is you before Azuka acts on your PC."
+        }
+      ],
       "expo-secure-store",
       "expo-font",
       "@config-plugins/react-native-webrtc",
-      ["expo-media-library", { "savePhotosPermission": "Azuka saves the clips you pick to your Photos." }],
-      "expo-video"
-    ]
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Azuka saves the clips you pick to your Photos."
+        }
+      ],
+      "expo-video",
+      "expo-updates"
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 3000,
+      "url": "https://u.expo.dev/PROJECT_ID"
+    }
   }
 }

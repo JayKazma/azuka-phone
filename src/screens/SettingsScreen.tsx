@@ -14,6 +14,7 @@ import { HOST_KIND_LABEL, hostKind } from "../net/protocol";
 import { clearActivity } from "../store/activity";
 import { go } from "../nav/ref";
 import { APP_VERSION } from "../config";
+import { checkForUpdate, updateLabel } from "../net/updates";
 
 function Row({ k, v, color, last }: { k: string; v: React.ReactNode; color?: string; last?: boolean }) {
   return (
@@ -65,10 +66,14 @@ export function SettingsScreen() {
       <Eyebrow color={C.dim}>This phone</Eyebrow>
       <Glass radius={20} inner={{ paddingHorizontal: 16 }}>
         <Row k="App" v={`v${APP_VERSION}`} />
+        <Row k="Update" v={updateLabel()} />
         <Row k="Siri" v="azuka://ask and azuka://talk" />
         <Row k="Push alerts" v="needs a paid Apple account" last />
       </Glass>
-      <Ghost label="Clear activity" icon="bell" h={42} onPress={() => { clearActivity(); useAzuka.getState().showToast("Activity cleared"); }} />
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <Ghost label="Update now" icon="down" h={42} onPress={() => { checkForUpdate(true); }} />
+        <Ghost label="Clear activity" icon="bell" h={42} onPress={() => { clearActivity(); useAzuka.getState().showToast("Activity cleared"); }} />
+      </View>
     </Screen>
   );
 }

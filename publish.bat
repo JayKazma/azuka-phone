@@ -1,14 +1,12 @@
 @echo off
-title Azuka - Publish the phone app
-cd /d "%~dp0.."
-rem the app is built by GitHub Actions in the public mirror JayKazma/azuka-phone:
-rem only the phone/ folder goes there, as its own history.
-git rev-parse --verify HEAD >nul 2>nul || ( echo [X] Not a git repo. & pause & exit /b 1 )
-for /f %%s in ('git subtree split --prefix=phone HEAD') do set SPLIT=%%s
-if "%SPLIT%"=="" ( echo [X] Could not split phone/ - read the message above. & pause & exit /b 1 )
-git push --force https://github.com/JayKazma/azuka-phone.git %SPLIT%:refs/heads/main
-if errorlevel 1 ( echo [X] Push failed - read the message above. & pause & exit /b 1 )
+title Azuka - Update the phone app
+cd /d "%~dp0"
+rem Over-the-air update: the phone swaps in the new JavaScript next time it opens
+rem (or from Settings > Update now). A native change needs build.bat instead.
+if not exist node_modules ( echo Installing packages first... & call npm ci || ( echo [X] npm ci failed. & pause & exit /b 1 ) )
+for /f "tokens=1-3 delims=/ " %%a in ("%date%") do set D=%%c-%%a-%%b
+call npx eas-cli update --branch main --message "update %D% %time:~0,5%" --non-interactive
+if errorlevel 1 ( echo [X] Update failed - read the message above. Not logged in? Run: npx eas-cli login & pause & exit /b 1 )
 echo.
-echo Pushed phone/ to azuka-phone. The iOS app build starts on GitHub:
-echo https://github.com/JayKazma/azuka-phone/actions
+echo Published. Open the app on the phone: it updates on launch, or press Update now in Settings.
 pause

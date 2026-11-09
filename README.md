@@ -11,13 +11,24 @@ The phone side of Azuka: pair once with the QR code the PC shows, then talk to h
 
 ## Get the app onto the phone (no Mac)
 
-1. **Build.** Run `phone\publish.bat` on the PC: it mirrors the `phone/` folder to the public repo [JayKazma/azuka-phone](https://github.com/JayKazma/azuka-phone). [Codemagic](https://codemagic.io) watches that repo and builds the app on a Mac for free (500 minutes a month on a personal account; a build takes about 15). One-time setup: sign in to Codemagic with GitHub, *Add application* → GitHub → `azuka-phone` → *React Native app* → the `codemagic.yaml` in the repo. After each publish, open the finished build on Codemagic and download `Azuka-unsigned.ipa` from its artifacts. (GitHub Actions would do the same job but needs a card on file for macOS builds; the workflow file is kept for when that is sorted.)
+1. **Build.** Run `phone\build.bat` on the PC: it mirrors the `phone/` folder to the public repo [JayKazma/azuka-phone](https://github.com/JayKazma/azuka-phone). [Codemagic](https://codemagic.io) watches that repo and builds the app on a Mac for free (500 minutes a month on a personal account; a build takes about 15). One-time setup: sign in to Codemagic with GitHub, *Add application* → GitHub → `azuka-phone` → *React Native app* → the `codemagic.yaml` in the repo. After each build, open it on Codemagic and download `Azuka-unsigned.ipa` from its artifacts. A full build is only needed when a native package or `app.json` changes; everything else ships over the air (see "Updating").
 2. **Sideloadly.** Install [Sideloadly](https://sideloadly.io) on the PC. Plug the iPhone in over USB and tap *Trust* on the phone. In Sideloadly, drag the ipa in, type your Apple ID, press *Start*. It asks for the Apple ID password once (an app-specific password works if two-factor gets in the way) and signs the ipa with a free development certificate.
 3. **Trust the profile.** On the phone: Settings → General → VPN & Device Management → your Apple ID → *Trust*.
 4. **Re-sign weekly.** Free certificates last 7 days; after that the app refuses to open until it is signed again. Plug in, press *Start* in Sideloadly on the same ipa; nothing on the phone is lost. A paid developer account makes it a year.
 5. **AltStore** is the alternative: install AltServer on the PC, AltStore on the phone, then open the ipa with AltStore. It refreshes the signature on its own while the phone is on the same Wi-Fi as the PC.
 
 What a free account cannot do: push notifications and Live Activities. Those need a paid Apple developer account; until then the app only hears from her while it is open, and anything that happened while it was closed arrives on the Activity tab the next time she is linked.
+
+## Updating
+
+The app checks Expo's update server when it opens and swaps in new JavaScript on its own (Settings → *Update now* forces a check). Publishing an update from the PC:
+
+```
+cd C:\Users\ulyss\Azuka\phone
+publish.bat
+```
+
+One-time setup: a free account at [expo.dev](https://expo.dev), then in `phone/`: `npm install`, `npx eas-cli login`, `npx eas-cli init` (writes the project id into `app.json`; commit it). The first build after that setup must be a full `build.bat` + Sideloadly, because the update client ships inside the native app. From then on only native changes need `build.bat`. The weekly re-sign is unrelated to updates and stays until a paid Apple account.
 
 ## Pair
 
