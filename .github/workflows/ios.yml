@@ -1,0 +1,71 @@
+name: iOS app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ipa:
+    name: Unsigned IPA
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      CI: "1"
+      EXPO_NO_TELEMETRY: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Prebuild
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Pods
+        working-directory: ios
+        run: pod install
+
+      - name: Build
+        working-directory: ios
+        run: |
+          xcodebuild -workspace Azuka.xcworkspace -scheme Azuka -configuration Release -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tee xcodebuild.log | grep -E "error:|warning: .*Azuka|BUILD" || true
+          test -d build/Build/Products/Release-iphoneos/Azuka.app
+
+      - name: Package
+        working-directory: ios
+        run: |
+          mkdir Payload
+          cp -r build/Build/Products/Release-iphoneos/Azuka.app Payload/
+          zip -qr Azuka-unsigned.ipa Payload
+          ls -la Azuka-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Azuka-unsigned.ipa
+          path: ios/Azuka-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild.log
+          path: ios/xcodebuild.log

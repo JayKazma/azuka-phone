@@ -11,7 +11,7 @@ The phone side of Azuka: pair once with the QR code the PC shows, then talk to h
 
 ## Get the app onto the phone (no Mac)
 
-1. **Build.** Push anything under `phone/` or run the *iOS app* workflow by hand on GitHub (Actions → iOS app → Run workflow). When it finishes, open the run and download the `Azuka-unsigned.ipa` artifact. Unzip it; inside is `Azuka-unsigned.ipa`.
+1. **Build.** Run `phone\publish.bat` on the PC: it mirrors the `phone/` folder to the public repo [JayKazma/azuka-phone](https://github.com/JayKazma/azuka-phone), where GitHub Actions builds it for free (private repos need a card on file for macOS builds). When the *iOS app* run finishes there, open it and download the `Azuka-unsigned.ipa` artifact. Unzip it; inside is `Azuka-unsigned.ipa`.
 2. **Sideloadly.** Install [Sideloadly](https://sideloadly.io) on the PC. Plug the iPhone in over USB and tap *Trust* on the phone. In Sideloadly, drag the ipa in, type your Apple ID, press *Start*. It asks for the Apple ID password once (an app-specific password works if two-factor gets in the way) and signs the ipa with a free development certificate.
 3. **Trust the profile.** On the phone: Settings → General → VPN & Device Management → your Apple ID → *Trust*.
 4. **Re-sign weekly.** Free certificates last 7 days; after that the app refuses to open until it is signed again. Plug in, press *Start* in Sideloadly on the same ipa; nothing on the phone is lost. A paid developer account makes it a year.
