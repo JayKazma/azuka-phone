@@ -19,7 +19,7 @@ import { useAzuka } from "../store/useAzuka";
 import { go } from "../nav/ref";
 import { OWNER } from "../config";
 import { greeting, hhmm } from "../util/time";
-import { foregroundApp, type AzState } from "../net/protocol";
+import { epochMs, foregroundApp, type AzState } from "../net/protocol";
 
 const corner = require("../../assets/azuka-corner.png");
 
@@ -106,6 +106,7 @@ export function HomeScreen() {
   const spotify = useAzuka((s) => s.spotify);
   const needs = useAzuka((s) => s.needsYou().length);
   const reminders = useAzuka((s) => s.reminders);
+  const clips = useAzuka((s) => s.clips);
   const cpuHist = useRef<number[]>([]);
   if (status?.cpu !== undefined) {
     const last = cpuHist.current[cpuHist.current.length - 1];
@@ -121,6 +122,9 @@ export function HomeScreen() {
     : [fg ? `${fg} is in front.` : "Nothing is in front.", mode ? `${mode} mode on.` : ""].filter(Boolean).join(" ");
   const nextRem = reminders.length ? reminders[0] : null;
   const track = spotify?.track;
+  const dayStart = new Date().setHours(0, 0, 0, 0);
+  const today = clips.filter((c) => epochMs(c.at) >= dayStart).length;
+  const lastClip = clips.reduce<number>((m, c) => Math.max(m, epochMs(c.at)), 0);
 
   return (
     <Screen>
@@ -168,7 +172,7 @@ export function HomeScreen() {
           viz={<Spark pts={cpuHist.current.length > 1 ? cpuHist.current : [0, 0]} color={C.cy} />}
           onPress={() => go("Tabs", { screen: "Control" })}
         />
-        <Tile icon="scissor" color={C.rd} label="Clips" value="Phase 3" sub="not yet on the phone" viz={<Bars n={5} color={C.rd} h={18} w={3} gap={2} />} onPress={() => go("Clips")} />
+        <Tile icon="scissor" color={C.rd} label="Clips" value={clips.length ? `${today} today` : "None"} sub={lastClip ? `Last one ${hhmm(lastClip)}` : "nothing saved yet"} viz={<Bars n={5} color={C.rd} h={18} w={3} gap={2} live={today > 0} />} onPress={() => go("Clips")} />
       </View>
       <Mono color={C.dim} style={{ textAlign: "center", marginTop: 4 }}>{link === "linked" && status?.server_time ? `PC time ${hhmm(status.server_time * 1000)}` : ""}</Mono>
     </Screen>
