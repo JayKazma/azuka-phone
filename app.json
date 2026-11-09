@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Azuka",
+    "slug": "azuka",
+    "version": "0.1.0",
+    "scheme": "azuka",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#09080d",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.sento.azuka",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Azuka scans the pairing code shown on your PC.",
+        "NSMicrophoneUsageDescription": "Azuka listens while you hold the talk button.",
+        "NSFaceIDUsageDescription": "Face ID confirms it is you before Azuka acts on your PC.",
+        "NSLocalNetworkUsageDescription": "Azuka talks to the assistant running on your PC over your own network.",
+        "UIBackgroundModes": ["audio"],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
+    },
+    "android": {
+      "package": "com.sento.azuka"
+    },
+    "plugins": [
+      ["expo-splash-screen", {
+        "image": "./assets/azuka-avatar.png",
+        "imageWidth": 180,
+        "backgroundColor": "#09080d"
+      }],
+      ["expo-camera", { "cameraPermission": "Azuka scans the pairing code shown on your PC." }],
+      ["expo-audio", { "microphonePermission": "Azuka listens while you hold the talk button." }],
+      ["expo-local-authentication", { "faceIDPermission": "Face ID confirms it is you before Azuka acts on your PC." }],
+      "expo-secure-store",
+      "expo-font"
+    ]
+  }
+}

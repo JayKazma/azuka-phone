@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+ios/
+android/
+dist/
+build/
+*.ipa
+.DS_Store
+!package-lock.json
