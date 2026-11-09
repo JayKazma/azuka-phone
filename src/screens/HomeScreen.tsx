@@ -46,7 +46,7 @@ function Halo() {
   }, [spin]);
   const rot = spin.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: R.hero, overflow: "hidden" }]}>
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <Svg width={260} height={260} style={{ position: "absolute", right: -60, top: -40 }}>
         <Defs>
           <RadialGradient id="h" cx="50%" cy="50%" r="50%">
@@ -133,8 +133,10 @@ export function HomeScreen() {
       </View>
 
       <Pressable onPress={() => go("Talk")} style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}>
-        <Glass radius={R.hero} style={{ height: 196 }} inner={{ overflow: "visible" }}>
-          <Halo />
+        <View style={{ height: 196 }}>
+          <Glass radius={R.hero} fill style={StyleSheet.absoluteFill}>
+            <Halo />
+          </Glass>
           <Image source={corner} style={s.corner} resizeMode="contain" />
           <View style={{ position: "absolute", left: 18, top: 18, right: 132, gap: 8 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
@@ -148,7 +150,7 @@ export function HomeScreen() {
             {latency !== null ? <Chip text={`${latency} ms`} icon="bolt" fg={C.cy} bg={alpha(C.cy, 0.1)} border={alpha(C.cy, 0.3)} h={28} /> : null}
             {game?.on ? <Chip text={game.app ? `In ${game.app}` : "In game"} icon="rec" fg={C.rd} bg={alpha(C.rd, 0.12)} border={alpha(C.rd, 0.35)} h={28} /> : null}
           </View>
-        </Glass>
+        </View>
       </Pressable>
 
       <PermissionStack />

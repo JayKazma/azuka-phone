@@ -55,7 +55,7 @@ type RoundProps = { icon: IconName; onPress?: () => void; badge?: number | strin
 export function RoundBtn({ icon, onPress, badge, size = 40, color = C.tx, style }: RoundProps) {
   return (
     <Pressable onPress={() => { Haptics.selectionAsync(); onPress?.(); }} style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }, style]} hitSlop={6}>
-      <Glass radius={size / 2} shadow={false} style={{ width: size, height: size }} inner={{ alignItems: "center", justifyContent: "center" }}>
+      <Glass radius={size / 2} shadow={false} fill style={{ width: size, height: size }} inner={{ alignItems: "center", justifyContent: "center" }}>
         <Icon name={icon} size={size * 0.45} color={color} />
       </Glass>
       {badge ? (

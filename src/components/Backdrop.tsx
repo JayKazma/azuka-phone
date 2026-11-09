@@ -11,11 +11,11 @@ export function Backdrop({ hue = C.pu, hue2 = C.cy }: Props) {
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: C.bg }]}>
       <Svg width={width} height={height}>
         <Defs>
-          <RadialGradient id="g1" cx="90%" cy="-8%" rx="60%" ry="40%" gradientUnits="userSpaceOnUse" fx="90%" fy="-8%">
+          <RadialGradient id="g1" cx={width * 0.9} cy={-height * 0.08} rx={width * 0.6} ry={height * 0.4} gradientUnits="userSpaceOnUse">
             <Stop offset="0" stopColor={hue} stopOpacity={0.33} />
             <Stop offset="1" stopColor={hue} stopOpacity={0} />
           </RadialGradient>
-          <RadialGradient id="g2" cx="-15%" cy="108%" rx="50%" ry="35%" gradientUnits="userSpaceOnUse">
+          <RadialGradient id="g2" cx={-width * 0.15} cy={height * 1.08} rx={width * 0.5} ry={height * 0.35} gradientUnits="userSpaceOnUse">
             <Stop offset="0" stopColor={hue2} stopOpacity={0.18} />
             <Stop offset="1" stopColor={hue2} stopOpacity={0} />
           </RadialGradient>

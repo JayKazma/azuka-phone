@@ -53,8 +53,8 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
 
   const routes = state.routes;
   return (
-    <View pointerEvents="box-none" style={[s.wrap, { bottom: insets.bottom + TABBAR_BOTTOM - (insets.bottom ? 12 : 0) }]}>
-      <Glass radius={24} style={{ height: TABBAR_H }} inner={s.inner}>
+    <View pointerEvents="box-none" style={[s.wrap, { bottom: insets.bottom ? insets.bottom - 10 : TABBAR_BOTTOM - 8 }]}>
+      <Glass radius={24} fill style={{ height: TABBAR_H }} inner={s.inner}>
         {routes.slice(0, 2).map((r, i) => tab(r, i))}
         <View style={{ width: 62 }} />
         {routes.slice(2).map((r, i) => tab(r, i + 2))}

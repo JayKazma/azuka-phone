@@ -81,4 +81,4 @@ npm run typecheck
 npx expo export --platform ios      # Metro bundle, no Mac needed
 ```
 
-Running it live on a phone from Windows needs a dev build, which again comes from the workflow or from EAS; Expo Go does not carry expo-audio's microphone stream or expo-camera's scanner in the shape this app uses.
+Running it live on a phone from Windows needs a build from the workflow (or an EAS dev build); Expo Go is not a reliable stand-in for the microphone stream and the camera scanner this app uses.

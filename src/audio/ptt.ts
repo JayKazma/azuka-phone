@@ -79,7 +79,7 @@ export function usePushToTalk() {
     live.current = false;
     try { stream.stop(); } catch {}
     flush(true);
-    link.send({ type: "phone_audio_end" });
+    if (seq.current > 0) link.send({ type: "phone_audio_end" });
     setActive(false);
     setLevel(0);
     useAzuka.setState({ talking: false, micLevel: 0 });

@@ -9,12 +9,13 @@ type Props = {
   accent?: string;
   glow?: string;
   shadow?: boolean;
+  fill?: boolean;
   style?: StyleProp<ViewStyle>;
   inner?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 };
 
-export function Glass({ radius = 22, accent, glow, shadow = true, style, inner, children }: Props) {
+export function Glass({ radius = 22, accent, glow, shadow = true, fill = false, style, inner, children }: Props) {
   const edge: [string, string, string] = accent ? [accent, GLASS_EDGE[1], GLASS_EDGE[2]] : GLASS_EDGE;
   return (
     <LinearGradient
@@ -29,7 +30,7 @@ export function Glass({ radius = 22, accent, glow, shadow = true, style, inner, 
         style,
       ]}
     >
-      <View style={[{ borderRadius: radius - 1, overflow: "hidden", flex: 1 }, inner]}>
+      <View style={[{ borderRadius: radius - 1, overflow: "hidden" }, fill && { flex: 1 }, inner]}>
         <BlurView intensity={18} tint="dark" style={StyleSheet.absoluteFill} />
         <LinearGradient colors={GLASS_FILL} style={StyleSheet.absoluteFill} />
         <View pointerEvents="none" style={s.topLine} />

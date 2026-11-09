@@ -146,7 +146,7 @@ export function TalkScreen({ navigation, route }: Props) {
             </View>
           ) : null}
           <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-            <Glass radius={26} shadow={false} style={{ flex: 1, height: 52 }} inner={{ flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 16, paddingRight: 6 }}>
+            <Glass radius={26} shadow={false} fill style={{ flex: 1, height: 52 }} inner={{ flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 16, paddingRight: 6 }}>
               <TextInput
                 value={text}
                 onChangeText={setText}

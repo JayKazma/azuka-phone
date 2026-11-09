@@ -147,7 +147,7 @@ export function PairScreen() {
       </View>
 
       {!manual ? (
-        <Glass accent={alpha(C.cy, 0.8)} radius={26} style={{ width: 236, height: 220, alignSelf: "center" }} inner={{ alignItems: "center", justifyContent: "center" }}>
+        <Glass accent={alpha(C.cy, 0.8)} radius={26} fill style={{ width: 236, height: 220, alignSelf: "center" }} inner={{ alignItems: "center", justifyContent: "center" }}>
           {perm?.granted ? (
             <CameraView
               style={StyleSheet.absoluteFill}

@@ -29,7 +29,7 @@ export function DevicePill({ name, link, onPress }: Props) {
   const color = LINK_COLOR[link];
   return (
     <Pressable onPress={() => { Haptics.selectionAsync(); onPress?.(); }} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}>
-      <Glass radius={999} shadow={false} style={{ height: 38 }} inner={{ flexDirection: "row", alignItems: "center", gap: 8, paddingLeft: 7, paddingRight: 12 }}>
+      <Glass radius={999} shadow={false} fill style={{ height: 38 }} inner={{ flexDirection: "row", alignItems: "center", gap: 8, paddingLeft: 7, paddingRight: 12 }}>
         <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: "rgba(95,211,154,0.14)", alignItems: "center", justifyContent: "center" }}>
           <Dot color={color} />
         </View>
