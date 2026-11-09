@@ -17,6 +17,7 @@
         "NSFaceIDUsageDescription": "Face ID confirms it is you before Azuka acts on your PC.",
         "NSLocalNetworkUsageDescription": "Azuka talks to the assistant running on your PC over your own network.",
         "UIBackgroundModes": ["audio"],
+        "NSPhotoLibraryAddUsageDescription": "Azuka saves the clips you pick to your Photos.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true,
           "NSAllowsLocalNetworking": true
@@ -36,7 +37,10 @@
       ["expo-audio", { "microphonePermission": "Azuka listens while you hold the talk button." }],
       ["expo-local-authentication", { "faceIDPermission": "Face ID confirms it is you before Azuka acts on your PC." }],
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "@config-plugins/react-native-webrtc",
+      ["expo-media-library", { "savePhotosPermission": "Azuka saves the clips you pick to your Photos." }],
+      "expo-video"
     ]
   }
 }
