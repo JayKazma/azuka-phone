@@ -7,7 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#09080d",
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.sento.azuka",

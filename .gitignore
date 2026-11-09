@@ -7,3 +7,4 @@ build/
 *.ipa
 .DS_Store
 !package-lock.json
+!screens/
