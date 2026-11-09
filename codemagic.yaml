@@ -1,0 +1,49 @@
+# Builds the unsigned iOS app on Codemagic (free personal minutes, Mac mini M2).
+# The repo Codemagic watches is the public mirror JayKazma/azuka-phone, where
+# this folder is the root. Sign the ipa on the PC with Sideloadly.
+workflows:
+  ios-unsigned:
+    name: iOS app (unsigned)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      xcode: latest
+      cocoapods: default
+      node: 22
+      vars:
+        CI: "1"
+        EXPO_NO_TELEMETRY: "1"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Install
+        script: npm ci
+      - name: Typecheck
+        script: npx tsc --noEmit
+      - name: Prebuild
+        script: npx expo prebuild --platform ios --no-install
+      - name: Pods
+        script: cd ios && pod install
+      - name: Build
+        script: |
+          cd ios
+          set -o pipefail
+          xcodebuild -workspace Azuka.xcworkspace -scheme Azuka -configuration Release -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tee xcodebuild.log | grep -E "error:|BUILD" || true
+          test -d build/Build/Products/Release-iphoneos/Azuka.app
+      - name: Package
+        script: |
+          cd ios
+          mkdir Payload
+          cp -r build/Build/Products/Release-iphoneos/Azuka.app Payload/
+          zip -qr Azuka-unsigned.ipa Payload
+          ls -la Azuka-unsigned.ipa
+    artifacts:
+      - ios/Azuka-unsigned.ipa
+      - ios/xcodebuild.log
