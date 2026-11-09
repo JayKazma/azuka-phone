@@ -40,11 +40,36 @@ The pill at the top of Home shows the link: **Linked**, **Reconnecting** (backs 
 ## Screens
 
 - **Home**: her state, a greeting, what is in front on the PC, latency, the "She suggests" card and her pending asks, and tiles for Tourney, Playing, PC and Clips.
-- **Control**: the PC screen at 2 fps while the tab is open, with latency, plus Lock, Volume, Media, Open app, Focus, Modes, Routine and Stop her. Touch, Keys, Clip and Record come in phase 3.
+- **Control**: the PC screen live over WebRTC while the tab is open (2 fps screenshots until the stream is up or if it cannot be), with latency, bitrate and frame size, Touch and Keys to drive the PC, Clip and Record, a landscape full-screen mode, plus Lock, Volume, Media, Open app, Focus, Modes, Routine and Stop her.
 - **Talk** (the purple orb): the chat thread, her step rail while she works, the amber approval card (Allow goes through Face ID first), a text box, and the cyan orb: hold to talk, let go to send. Audio goes up as 16 kHz mono PCM; her replies play as mp3.
 - **Play**: Spotify now playing with controls, one-tap modes, and the tourney card.
 - **Activity**: everything that needed you or happened while you were away, kept on the phone.
-- **Clips**: placeholder until phase 3.
+- **Clips**: the replay clips and recordings saved on the PC, with a player, Save to Photos, Share and Delete.
+
+## Live view and control
+
+The Control tab asks the PC for a WebRTC stream of the captured display as soon as it opens and lets it go when you leave the tab or background the app; the picture falls back to 2 fps screenshots while the stream is connecting or if the connection fails. The chip in the corner shows the frame size, fps and latency; tap it to pick Auto, 720p or 1080p. The expand button opens a landscape full-screen view.
+
+**Touch** turns the picture into a trackpad for the PC's cursor, mapped to the real screen even when the video is letterboxed:
+
+| Gesture | Does |
+| --- | --- |
+| one finger drag | moves the cursor (the finger is the cursor) |
+| tap | left click |
+| double tap | double click |
+| hold 0.5 s | right click |
+| two finger drag | scroll |
+| two finger tap | middle click |
+
+**Keys** brings up the keyboard: what you type goes to the PC as you type it, Return is Enter, and the row of chips sends Esc, Tab, Ctrl+C, Ctrl+V, Alt+Tab, Win, Enter and the arrow keys.
+
+For either to work, **Phone control** must be on in Azuka → Settings → Connections on the PC. If it is off the PC answers "Phone control is off" and the app drops out of Touch. Control pauses while a game is in front unless you allowed it there; the picture keeps going.
+
+## Clips
+
+The PC keeps a rolling replay buffer of the last 30 seconds of the screen. Say "clip that" to her, or tap **Clip** on the Control tab, and those 30 seconds are saved on the PC; **Record** starts and stops a longer recording. Both land on the Clips screen (the Clips tile on Home shows today's count and the time of the last one, and Activity gets a "Clip saved" row).
+
+Pick a clip to play it; the app pulls the mp4 from the PC over the link the first time and keeps it in its cache. **Save to Photos** writes it to the Photos library (the app asks for add-only access the first time), **Share** opens the iOS share sheet, and the cross deletes it on the PC and the phone. Nothing is uploaded anywhere; the file only travels PC → phone over your own link.
 
 ## Siri and the Action Button
 
@@ -80,6 +105,9 @@ Everything is in `src/net/protocol.ts`. In short:
 - On connect the PC sends `state`, `ready`, `settings`, `reminders`, `watches`, `phone_hello` and any open `permission`.
 - Rendered: `state`, `transcript`, `delta`, `reply`, `speak` (base64 mp3), `stop_audio`, `step`, `permission` / `permission_done`, `suggest`, `initiative`, `notice`, `reminder`, `spotify` (event `player`), `modes`, `health`, `game`.
 - Sent: `text`, `phone_audio` (seq, base64 int16 LE 16 kHz mono, about 250 ms each) then `phone_audio_end`, `interrupt`, `permission_reply`, `initiative` answer, `phone` ops `status` / `screenshot` / `ping`, and the add-on requests `spotify`, `modes`, `reminders`, `health` with a `rid` the PC echoes.
+- Stream: the phone sends `stream start` (quality auto / 720 / 1080), the PC answers `stream started` with width, height and fps, the phone builds a recvonly `RTCPeerConnection` (STUN `stun.l.google.com:19302`), sends its offer as `stream signal {sdp}`, gets the answer the same way and ICE candidates trickle both ways as `stream signal {candidate}`; `stream stop` ends it.
+- Input (only while Touch or Keys is on): `input` ops `move` (x, y normalised 0..1 on the captured display), `down` / `up` / `click` / `dblclick` with `button`, `scroll` (dx, dy in lines, +dy is down), `keys` (`combo` like `ctrl+c`) and `text`.
+- Clips: `clips list` → `items` (id, kind clip / recording, name, at, seconds, bytes, thumb), `clips clip` → broadcast `saved`, `clips record {on}` → `recording {on, since}`, `clips get {id}` → `file` chunks (seq, total, base64 ≤ 192 KB) then `file_end {bytes}`, `clips delete {id}` → a fresh list.
 
 ## Develop
 
